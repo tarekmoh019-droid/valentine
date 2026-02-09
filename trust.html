@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Valentine ❤️</title>
+<script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+
+<style>
+body, html {
+    margin: 0;
+    padding: 0;
+    background: black;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    color: #fff;
+}
+canvas { display: block; }
+
+/* Letter */
+#letterColumn {
+    position: absolute;
+    top: 48%;
+    left: 60%;
+    transform: translate(-50%, -50%) scaleY(0);
+    width: 380px;
+    max-height: 400px;
+    background: #ffe6f0;
+    border: 2px solid #ff99aa;
+    border-radius: 15px;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 0 0 20px #ff99aa;
+    color: #800000;
+    transition: transform 1s ease;
+    z-index: 10;
+}
+
+/* GIF */
+.tenor-gif-embed {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 230px !important;
+    z-index: 20;
+}
+</style>
+</head>
+
+<body onload="init()">
+
+<!-- GIF -->
+<div class="tenor-gif-embed"
+     data-postid="14737639179877233341"
+     data-share-method="host"
+     data-aspect-ratio="1.14583"
+     data-width="230"></div>
+<script async src="https://tenor.com/embed.js"></script>
+
+<canvas id="heartCanvas"></canvas>
+
+<!-- Letter -->
+<div id="letterColumn">
+    <h2>My Dearest ❤️</h2>
+    <p>From the very first moment I met you, my heart has been yours.</p>
+    <p>I am sorry for every mistake. I only want to make you happy.</p>
+    <p>Forever yours 💖</p>
+</div>
+
+<script>
+let stage, w, h;
+let question, yesBtn, noBtn;
+let loveNameText, finalText;
+let yesScale = 1;
+let music;
+
+function init() {
+    stage = new createjs.Stage("heartCanvas");
+    stage.enableMouseOver();
+    resize();
+    window.addEventListener("resize", resize);
+
+    music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_8b1c8d4b36.mp3");
+    music.loop = true;
+
+    question = new createjs.Text(
+        "Can you be my Valentine? 💖",
+        "bold 36px Arial",
+        "#FF4D6D"
+    );
+    question.textAlign = "center";
+    question.x = w/2;
+    question.y = h/2 - 100;
+    stage.addChild(question);
+    heartbeat(question);
+
+    yesBtn = new createjs.Text("YES 💕","bold 32px Arial","#00FF99");
+    yesBtn.textAlign = "center";
+    yesBtn.x = w/2 - 100;
+    yesBtn.y = h/2;
+    yesBtn.cursor = "pointer";
+    stage.addChild(yesBtn);
+
+    noBtn = new createjs.Text("NO 💔","bold 32px Arial","#FF3333");
+    noBtn.textAlign = "center";
+    noBtn.x = w/2 + 100;
+    noBtn.y = h/2;
+    noBtn.cursor = "pointer";
+    stage.addChild(noBtn);
+
+    loveNameText = new createjs.Text(
+        "I love you Hiba ❤️",
+        "bold 42px Arial",
+        "#FF6FAE"
+    );
+    loveNameText.textAlign = "center";
+    loveNameText.x = w/2;
+    loveNameText.y = h/2 - 40;
+    loveNameText.alpha = 0;
+    stage.addChild(loveNameText);
+
+    finalText = new createjs.Text(
+        "the longer I'm with you\nthe more I love you 💕",
+        "bold 26px Arial",
+        "#fff"
+    );
+    finalText.textAlign = "center";
+    finalText.lineHeight = 34;
+    finalText.x = w/2;
+    finalText.y = h/2 + 40;
+    finalText.alpha = 0;
+    stage.addChild(finalText);
+
+    // YES يكبر غير بالكليك على NO
+    noBtn.addEventListener("click", growYes);
+    yesBtn.addEventListener("click", showLove);
+
+    createjs.Ticker.timingMode = createjs.Ticker.RAF;
+    createjs.Ticker.addEventListener("tick", tick);
+}
+
+function heartbeat(obj){
+    createjs.Tween.get(obj,{loop:true})
+        .to({scaleX:1.08, scaleY:1.08},400)
+        .to({scaleX:1, scaleY:1},400);
+}
+
+function growYes(){
+    yesScale += 0.3;
+    createjs.Tween.get(yesBtn)
+        .to({scaleX:yesScale, scaleY:yesScale},300);
+}
+
+function showLove(){
+    stage.removeChild(question, yesBtn, noBtn);
+
+    music.play().catch(()=>{});
+    music.volume = 0.6;
+
+    createjs.Tween.get(loveNameText)
+        .to({alpha:1, y:loveNameText.y - 10},1200);
+
+    createjs.Tween.get(finalText)
+        .wait(400)
+        .to({alpha:1},1500);
+
+    document.getElementById("letterColumn").style.transform =
+        "translate(-50%, -50%) scaleY(1)";
+}
+
+function spawnHeart(){
+    let heart = new createjs.Shape();
+    let size = Math.random()*15+10;
+
+    heart.graphics.beginFill("rgba(255,80,120,0.8)")
+        .moveTo(0,0)
+        .quadraticCurveTo(-size,-size,-size,size/2)
+        .quadraticCurveTo(-size,size,0,size*1.5)
+        .quadraticCurveTo(size,size,size,size/2)
+        .quadraticCurveTo(size,-size,0,0);
+
+    heart.x = Math.random()*w;
+    heart.y = h+50;
+    stage.addChild(heart);
+
+    createjs.Tween.get(heart)
+        .to({y:-100, alpha:0},5000)
+        .call(()=>stage.removeChild(heart));
+}
+
+function tick(){
+    if(Math.random()<0.08) spawnHeart();
+    stage.update();
+}
+
+function resize(){
+    w = window.innerWidth;
+    h = window.innerHeight;
+    stage.canvas.width = w;
+    stage.canvas.height = h;
+}
+</script>
+</body>
+</html>
+
